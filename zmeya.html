@@ -2,643 +2,303 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Snake + Фото (с кнопкой назад)</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snake Photo Reveal</title>
 <style>
-body{
-margin:0;
-background:#111;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-font-family:Arial;
-color:white;
-}
+    :root {
+        --primary: #4CAF50;
+        --accent: #ff9800;
+        --bg: #0a0a0a;
+        --panel: rgba(255, 255, 255, 0.05);
+    }
+    body {
+        margin: 0;
+        background: var(--bg);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        font-family: 'Segoe UI', Roboto, sans-serif;
+        color: white;
+        overflow: hidden;
+    }
 
-/* Кнопка назад */
-.back-button {
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    background: #ff5722;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    padding: 12px 25px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: 0.3s;
-    border: 2px solid #ff9800;
-    z-index: 1000;
-}
+    /* Кнопка назад */
+    .back-btn {
+        position: fixed; top: 20px; left: 20px;
+        background: none; border: 1px solid #444; color: #aaa;
+        padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: 0.3s;
+        z-index: 100;
+    }
+    .back-btn:hover { border-color: #ff5722; color: white; }
 
-.back-button:hover {
-    background: #ff7043;
-    transform: scale(1.05);
-    box-shadow: 0 0 20px #ff5722;
-}
+    .container {
+        display: flex;
+        gap: 20px;
+        padding: 25px;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 24px;
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    }
 
-.back-button:active {
-    transform: scale(0.95);
-}
+    /* Игровая зона */
+    .game-layout { display: flex; gap: 15px; }
+    
+    .canvas-wrapper { position: relative; }
+    canvas#game {
+        background: #000;
+        border-radius: 12px;
+        border: 2px solid var(--primary);
+        box-shadow: 0 0 20px rgba(76, 175, 80, 0.15);
+        display: block;
+    }
 
-/* панель настроек */
-.settings-panel {
-    background: #222;
-    padding: 12px 20px;
-    border-radius: 40px;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 30px;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    border: 1px solid #4CAF50;
-    margin-top: 60px; /* отступ для кнопки назад */
-}
+    /* Правая панель с настройками и инфо */
+    .side-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 160px;
+    }
 
-.settings-group {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+    .card {
+        background: var(--panel);
+        border-radius: 15px;
+        padding: 12px;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
 
-.settings-group label {
-    font-weight: bold;
-    color: #ddd;
-}
+    .label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 8px; letter-spacing: 1px; }
+    .value { font-size: 24px; font-weight: bold; color: var(--primary); text-align: center; }
 
-.btn-group {
-    display: flex;
-    gap: 8px;
-}
+    /* Кнопки выбора */
+    .btn-group { display: flex; flex-direction: column; gap: 5px; }
+    .btn-group button {
+        background: #222; border: 1px solid #444; color: #ccc;
+        padding: 6px; border-radius: 8px; cursor: pointer; font-size: 12px; transition: 0.2s;
+    }
+    .btn-group button.active { background: var(--primary); color: #000; border-color: var(--primary); font-weight: bold; }
+    .btn-group button:disabled { opacity: 0.3; cursor: default; }
 
-.btn-group button {
-    background: #333;
-    color: white;
-    border: 2px solid #555;
-    padding: 6px 16px;
-    border-radius: 30px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.2s;
-    font-size: 14px;
-}
+    #startBtn {
+        background: var(--accent); border: none; color: #000;
+        padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer;
+        margin-top: auto; transition: 0.3s;
+    }
+    #startBtn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,152,0,0.4); }
+    #startBtn:disabled { background: #333; color: #666; cursor: not-allowed; }
 
-.btn-group button.active {
-    background: #4CAF50;
-    border-color: #8bc34a;
-    color: black;
-}
+    /* Фото */
+    .photo-section {
+        position: relative;
+        width: 400px;
+        height: 400px;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 2px solid rgba(255,255,255,0.1);
+        cursor: pointer;
+    }
+    .photo-section img { width: 100%; height: 100%; object-fit: cover; }
+    .cover {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(135deg, #111 0%, #000 100%);
+        transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-.btn-group button:hover:not(:disabled) {
-    background: #4CAF50;
-    color: black;
-}
+    /* Текст-оверлей */
+    #pauseText {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: rgba(0,0,0,0.9); padding: 20px; border-radius: 20px;
+        text-align: center; border: 1px solid var(--primary); z-index: 10;
+        min-width: 180px; font-weight: bold; line-height: 1.4;
+    }
 
-.btn-group button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
+    /* Подсказки */
+    .hints {
+        position: absolute; bottom: -35px; width: 100%;
+        display: flex; justify-content: center; gap: 20px;
+        font-size: 11px; color: #555;
+    }
+    .hints span b { color: var(--primary); border: 1px solid #333; padding: 1px 5px; border-radius: 4px; }
 
-#startBtn {
-    background: #ff9800;
-    border: 2px solid #ff5722;
-    color: black;
-    padding: 8px 24px;
-    border-radius: 30px;
-    font-weight: bold;
-    font-size: 16px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-#startBtn:hover:not(:disabled) {
-    background: #ff5722;
-    transform: scale(1.05);
-}
-
-#startBtn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.container{
-display:flex;
-gap:40px;
-align-items:center;
-flex-wrap: wrap;
-justify-content: center;
-}
-
-.game-block{
-text-align:center;
-position:relative;
-}
-
-canvas{
-background:black;
-border:4px solid #4CAF50;
-}
-
-#score{
-margin-bottom:10px;
-font-size:22px;
-}
-
-/* пауза / победа / ожидание */
-#pauseText{
-position:absolute;
-top:50%;
-left:50%;
-transform:translate(-50%,-50%);
-font-size:36px;
-display:none;
-color:white;
-text-align:center;
-white-space: pre-line;
-background: rgba(0,0,0,0.8);
-padding: 20px 30px;
-border-radius: 30px;
-z-index: 10;
-border: 2px solid #4CAF50;
-}
-
-/* Панель управления */
-.controls-panel {
-    margin-top: 15px;
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    background: #222;
-    padding: 12px 20px;
-    border-radius: 50px;
-    border: 1px solid #4CAF50;
-}
-
-.control-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 18px;
-}
-
-.control-item span {
-    background: #333;
-    padding: 5px 12px;
-    border-radius: 20px;
-    border: 1px solid #4CAF50;
-    color: #4CAF50;
-    font-weight: bold;
-}
-
-/* фото */
-.photo-box{
-position:relative;
-width:400px;
-height:400px;
-border:4px solid white;
-overflow:hidden;
-cursor:pointer;
-flex-shrink: 0;
-}
-
-.photo-box img{
-width:100%;
-height:100%;
-display: block;
-object-fit: cover;
-}
-
-.cover{
-position:absolute;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:black;
-transition:height 0.3s;
-}
-
-/* fullscreen */
-#fullscreen{
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:rgba(0,0,0,0.95);
-display:none;
-justify-content:center;
-align-items:center;
-z-index:999;
-}
-
-#fullscreen img{
-max-width:90%;
-max-height:90%;
-object-fit: contain;
-}
+    #fullscreen {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.95); display: none; justify-content: center; align-items: center; z-index: 1000;
+    }
 </style>
 </head>
 <body>
 
-<button class="back-button" onclick="goBack()">
-    <span>◀</span> Назад к играм
-</button>
-
-<div class="settings-panel">
-    <div class="settings-group">
-        <label>⚡ Сложность:</label>
-        <div class="btn-group" id="difficultyGroup">
-            <button data-diff="easy">Лёгкий</button>
-            <button data-diff="hard">Сложный</button>
-        </div>
-    </div>
-    <div class="settings-group">
-        <label>⏱ Скорость:</label>
-        <div class="btn-group" id="speedGroup">
-            <button data-speed="slow">Медленно</button>
-            <button data-speed="medium">Средне</button>
-            <button data-speed="fast">Быстро</button>
-        </div>
-    </div>
-    <button id="startBtn" disabled>▶ Старт</button>
-</div>
+<button class="back-btn" onclick="location.href='index.html'">← К играм</button>
 
 <div class="container">
+    <div class="game-layout">
+        <div class="canvas-wrapper">
+            <canvas id="game" width="400" height="400"></canvas>
+            <div id="pauseText">Выберите настройки <br> и нажмите Старт</div>
+        </div>
 
-<div class="game-block">
-<div id="score">Очки: 0</div>
-<canvas id="game" width="400" height="400"></canvas>
-<div id="pauseText">👆 Выбери параметры и нажми Старт</div>
+        <div class="side-panel">
+            <div class="card">
+                <div class="label">Очки</div>
+                <div id="score" class="value">0</div>
+            </div>
 
-<!-- Подсказки управления -->
-<div class="controls-panel">
-    <div class="control-item"><span>← →</span> влево/вправо</div>
-    <div class="control-item"><span>↑ ↓</span> вверх/вниз</div>
-    <div class="control-item"><span>Пробел</span> пауза</div>
-</div>
-</div>
+            <div class="card">
+                <div class="label">Сложность</div>
+                <div class="btn-group" id="diffGroup">
+                    <button onclick="setDiff('easy', this)">Лёгкий</button>
+                    <button onclick="setDiff('hard', this)">Сложный</button>
+                </div>
+            </div>
 
-<div class="photo-box" onclick="openFullscreen()">
-<img id="photo" src="" alt="Фото">
-<div id="cover" class="cover"></div>
-</div>
+            <div class="card">
+                <div class="label">Скорость</div>
+                <div class="btn-group" id="speedGroup">
+                    <button onclick="setSpeed('slow', this)">Медленно</button>
+                    <button onclick="setSpeed('medium', this)">Средне</button>
+                    <button onclick="setSpeed('fast', this)">Быстро</button>
+                </div>
+            </div>
 
+            <button id="startBtn" onclick="startGame()" disabled>▶ СТАРТ</button>
+        </div>
+    </div>
+
+    <div class="photo-section" onclick="openFullscreen()">
+        <img id="photo">
+        <div id="cover" class="cover"></div>
+    </div>
+
+    <div class="hints">
+        <span><b>↑ ↓ ← →</b> Движение</span>
+        <span><b>Space</b> Пауза</span>
+        <span>Цель: <b>100</b></span>
+    </div>
 </div>
 
 <div id="fullscreen" onclick="this.style.display='none'">
-<img id="fullImg" src="" alt="Полноэкранное фото">
+    <img id="fullImg" style="max-width:90%; max-height:90%; border-radius:10px; box-shadow: 0 0 50px rgba(0,0,0,1);">
 </div>
 
 <script>
+let paused = false, gameOver = false, win = false, gameStarted = false;
+let currentDifficulty = null, currentSpeed = null;
+let frameSkip = 8, count = 0, score = 0, grid = 20;
 
-// =======================
-// ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
-// =======================
+const canvas = document.getElementById("game"), ctx = canvas.getContext("2d");
+const photo = document.getElementById("photo"), fullImg = document.getElementById("fullImg"), 
+      cover = document.getElementById("cover"), scoreVal = document.getElementById("score"), 
+      msg = document.getElementById("pauseText"), sBtn = document.getElementById("startBtn");
 
-let paused = false;
-let gameOver = false;
-let win = false;
-let gameStarted = false; // игра не начата, пока не нажали Старт
+let snake = { x: 160, y: 160, dx: grid, dy: 0, cells: [], maxCells: 4 };
+let apple = { x: 320, y: 320 };
 
-let currentDifficulty = null;   // не выбрано
-let currentSpeed = null;        // не выбрано
-
-// =======================
-// ФОТО (локальные photo1.jpg ... photo82.jpg)
-// =======================
-
-function setRandomPhoto(){
-    const num = Math.floor(Math.random() * 82) + 1; // 1-82
-    const src = "photo" + num + ".jpg";
-    document.getElementById("photo").src = src;
-    document.getElementById("fullImg").src = src;
+function setRandomPhoto() {
+    const num = Math.floor(Math.random() * 82) + 1;
+    photo.src = fullImg.src = `photo${num}.jpg`;
 }
 
-// открыть полноэкран
-function openFullscreen(){
-    if(!win) return; // только после победы
-    document.getElementById("fullscreen").style.display = "flex";
+function setDiff(d, btn) {
+    currentDifficulty = d;
+    highlight(btn, 'diffGroup');
 }
 
-// =======================
-// ИГРА
-// =======================
-
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-
-const grid = 20;
-let count = 0;
-
-// Скорость (частота обновления) будет зависеть от currentSpeed
-let frameSkip = 8; // по умолчанию средне
-
-function updateFrameSkip() {
-    switch(currentSpeed) {
-        case 'slow': frameSkip = 16; break;
-        case 'medium': frameSkip = 8; break;
-        case 'fast': frameSkip = 4; break;
-    }
+function setSpeed(s, btn) {
+    currentSpeed = s;
+    frameSkip = s === 'slow' ? 14 : s === 'medium' ? 8 : 4;
+    highlight(btn, 'speedGroup');
 }
 
-let snake = {
-x:160,
-y:160,
-dx:grid,
-dy:0,
-cells:[],
-maxCells:4
-};
-
-let apple = {
-x:320,
-y:320
-};
-
-let score = 0;
-
-function getRandomInt(min,max){
-return Math.floor(Math.random()*(max-min))+min;
-}
-
-function updatePhoto(){
-let percent = Math.min(score,100);
-document.getElementById("cover").style.height = (100-percent) + "%";
-}
-
-// Функция для генерации нового яблока НЕ на змейке
-function generateApple() {
-    const maxAttempts = 1000;
-    let attempts = 0;
-    let newX, newY;
-    let validPosition = false;
-    
-    while (!validPosition && attempts < maxAttempts) {
-        newX = getRandomInt(0,20)*grid;
-        newY = getRandomInt(0,20)*grid;
-        validPosition = true;
-        
-        // Проверяем, не занята ли клетка змейкой
-        for (let cell of snake.cells) {
-            if (cell.x === newX && cell.y === newY) {
-                validPosition = false;
-                break;
-            }
-        }
-        attempts++;
-    }
-    
-    if (validPosition) {
-        apple.x = newX;
-        apple.y = newY;
-    } else {
-        console.log("Не удалось найти место для яблока");
-    }
-}
-
-function resetGame(){
-showMessage("💀 Игра окончена\nОчки: " + score);
-setTimeout(() => {
-    // Сброс параметров
-    snake.x=160;
-    snake.y=160;
-    snake.cells=[];
-    snake.maxCells=4;
-    snake.dx=grid;
-    snake.dy=0;
-    
-    score=0;
-    win=false;
-    gameOver=false;
-    paused=false;
-    
-    document.getElementById("score").innerText="Очки: 0";
-    document.getElementById("pauseText").style.display="none";
-    
-    // Новое яблоко
-    generateApple();
-    
-    updatePhoto();
-    setRandomPhoto();
-}, 1500);
-}
-
-function showMessage(text){
-let el = document.getElementById("pauseText");
-el.innerText = text;
-el.style.display = "block";
-}
-
-function loop(){
-
-requestAnimationFrame(loop);
-
-// Если игра не начата или на паузе или окончена - не обновляем логику
-if(!gameStarted || paused || gameOver || win) {
-    drawGame();
-    return;
-}
-
-if(++count < frameSkip) return;
-count = 0;
-
-// Логика движения
-snake.x += snake.dx;
-snake.y += snake.dy;
-
-// Проверка столкновения со стенами
-if(currentDifficulty === 'hard') {
-    if(snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height){
-        gameOver = true;
-        showMessage("💀 Проигрыш");
-        resetGame();
-        return;
-    }
-} else {
-    if(snake.x < 0) snake.x = canvas.width - grid;
-    if(snake.x >= canvas.width) snake.x = 0;
-    if(snake.y < 0) snake.y = canvas.height - grid;
-    if(snake.y >= canvas.height) snake.y = 0;
-}
-
-snake.cells.unshift({x:snake.x,y:snake.y});
-
-if(snake.cells.length > snake.maxCells){
-snake.cells.pop();
-}
-
-let ateApple = (snake.x === apple.x && snake.y === apple.y);
-
-// Проверка столкновения с собой
-for(let i = 1; i < snake.cells.length; i++){
-    if(snake.cells[0].x === snake.cells[i].x && snake.cells[0].y === snake.cells[i].y){
-        gameOver = true;
-        showMessage("💀 Проигрыш");
-        resetGame();
-        return;
-    }
-}
-
-if(ateApple){
-    snake.maxCells++;
-    score++;
-    document.getElementById("score").innerText="Очки: "+score;
-    updatePhoto();
-
-    if(score >= 100){
-        win = true;
-        showMessage("🔥 Победа!\nКликни по фото");
-    } else {
-        generateApple();
-    }
-}
-
-drawGame();
-}
-
-function drawGame() {
-ctx.clearRect(0,0,canvas.width,canvas.height);
-
-ctx.fillStyle="red";
-ctx.fillRect(apple.x,apple.y,grid-1,grid-1);
-
-ctx.fillStyle="lime";
-snake.cells.forEach(function(cell){
-    ctx.fillRect(cell.x,cell.y,grid-1,grid-1);
-});
-}
-
-// управление
-document.addEventListener("keydown",function(e){
-
-if(!gameStarted) return;
-
-if(e.code === "Space" || e.key.toLowerCase() === "p"){
-    if(win || gameOver) return;
-    paused = !paused;
-    showMessage(paused ? "⏸ Пауза" : "");
-    if(!paused) document.getElementById("pauseText").style.display="none";
-    return;
-}
-
-if(paused || win || gameOver) return;
-
-if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) {
-    e.preventDefault();
-}
-
-if(e.key === "ArrowLeft" && snake.dx === 0){
-snake.dx=-grid;
-snake.dy=0;
-}
-else if(e.key === "ArrowUp" && snake.dy === 0){
-snake.dy=-grid;
-snake.dx=0;
-}
-else if(e.key === "ArrowRight" && snake.dx === 0){
-snake.dx=grid;
-snake.dy=0;
-}
-else if(e.key === "ArrowDown" && snake.dy === 0){
-snake.dy=grid;
-snake.dx=0;
-}
-
-});
-
-// =======================
-// НАСТРОЙКИ
-// =======================
-
-function setDifficulty(diff) {
-    currentDifficulty = diff;
-    document.querySelectorAll('#difficultyGroup button').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.diff === diff) btn.classList.add('active');
-    });
-    checkStartButton();
-}
-
-function setSpeed(speed) {
-    currentSpeed = speed;
-    updateFrameSkip();
-    document.querySelectorAll('#speedGroup button').forEach(btn => {
-        btn.classList.remove('active');
-        if (btn.dataset.speed === speed) btn.classList.add('active');
-    });
-    checkStartButton();
-}
-
-function checkStartButton() {
-    const startBtn = document.getElementById('startBtn');
-    startBtn.disabled = !(currentDifficulty && currentSpeed);
+function highlight(btn, group) {
+    document.querySelectorAll(`#${group} button`).forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    sBtn.disabled = !(currentDifficulty && currentSpeed);
 }
 
 function startGame() {
-    if (!currentDifficulty || !currentSpeed) return;
-    
-    gameStarted = true;
-    paused = false;
-    gameOver = false;
-    win = false;
-    
-    snake.x = 160;
-    snake.y = 160;
-    snake.cells = [];
-    snake.maxCells = 4;
-    snake.dx = grid;
-    snake.dy = 0;
-    
-    score = 0;
-    document.getElementById("score").innerText="Очки: 0";
-    
-    generateApple();
+    gameStarted = true; paused = false; gameOver = false; win = false;
+    score = 0; snake.maxCells = 4; snake.cells = []; snake.dx = grid; snake.dy = 0;
+    snake.x = 160; snake.y = 160;
+    scoreVal.innerText = "0";
+    msg.style.display = "none";
     updatePhoto();
-    document.getElementById("pauseText").style.display = "none";
-    
-    document.querySelectorAll('#difficultyGroup button, #speedGroup button').forEach(btn => {
-        btn.disabled = true;
+    document.querySelectorAll('.btn-group button').forEach(b => b.disabled = true);
+    sBtn.disabled = true;
+}
+
+function updatePhoto() {
+    cover.style.height = (100 - Math.min(score, 100)) + "%";
+    if(score >= 100 && !win) { win = true; msg.innerHTML = "🔥 ПОБЕДА!<br>Кликни на фото"; msg.style.display = "block"; }
+}
+
+function loop(time) {
+    requestAnimationFrame(loop);
+    if(!gameStarted || paused || gameOver || win) return;
+
+    if(++count < frameSkip) return;
+    count = 0;
+
+    snake.x += snake.dx; snake.y += snake.dy;
+
+    if(currentDifficulty === 'hard') {
+        if(snake.x < 0 || snake.x >= canvas.width || snake.y < 0 || snake.y >= canvas.height) end();
+    } else {
+        if(snake.x < 0) snake.x = canvas.width - grid;
+        else if(snake.x >= canvas.width) snake.x = 0;
+        if(snake.y < 0) snake.y = canvas.height - grid;
+        else if(snake.y >= canvas.height) snake.y = 0;
+    }
+
+    snake.cells.unshift({x: snake.x, y: snake.y});
+    if(snake.cells.length > snake.maxCells) snake.cells.pop();
+
+    snake.cells.forEach((cell, index) => {
+        if(cell.x === apple.x && cell.y === apple.y) {
+            snake.maxCells++; score++; scoreVal.innerText = score;
+            apple.x = Math.floor(Math.random()*20)*grid;
+            apple.y = Math.floor(Math.random()*20)*grid;
+            updatePhoto();
+        }
+        for(let i = index + 1; i < snake.cells.length; i++) {
+            if(cell.x === snake.cells[i].x && cell.y === snake.cells[i].y) end();
+        }
     });
+
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "#ff4444"; ctx.fillRect(apple.x, apple.y, grid-1, grid-1);
+    ctx.fillStyle = "lime";
+    snake.cells.forEach(c => ctx.fillRect(c.x, c.y, grid-1, grid-1));
 }
 
-// =======================
-// НАЗАД НА ГЛАВНУЮ
-// =======================
-
-function goBack() {
-    window.location.href = 'index.html';
+function end() {
+    gameOver = true;
+    msg.innerHTML = "💀 ПРОИГРЫШ<br>Очки: " + score;
+    msg.style.display = "block";
+    setTimeout(() => {
+        document.querySelectorAll('.btn-group button').forEach(b => b.disabled = false);
+        sBtn.disabled = false;
+        msg.innerHTML = "Настройте и<br>нажмите Старт";
+        setRandomPhoto();
+    }, 2000);
 }
 
-// Обработчики кнопок
-document.querySelectorAll('#difficultyGroup button').forEach(btn => {
-    btn.addEventListener('click', () => setDifficulty(btn.dataset.diff));
+document.addEventListener("keydown", e => {
+    if(e.code === "Space") { paused = !paused; msg.innerHTML = "⏸ ПАУЗА"; msg.style.display = paused ? "block" : "none"; }
+    if(paused || !gameStarted) return;
+    if(e.key === "ArrowLeft" && snake.dx === 0) { snake.dx = -grid; snake.dy = 0; }
+    else if(e.key === "ArrowUp" && snake.dy === 0) { snake.dy = -grid; snake.dx = 0; }
+    else if(e.key === "ArrowRight" && snake.dx === 0) { snake.dx = grid; snake.dy = 0; }
+    else if(e.key === "ArrowDown" && snake.dy === 0) { snake.dy = grid; snake.dx = 0; }
+    if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].includes(e.key)) e.preventDefault();
 });
 
-document.querySelectorAll('#speedGroup button').forEach(btn => {
-    btn.addEventListener('click', () => setSpeed(btn.dataset.speed));
-});
-
-document.getElementById('startBtn').addEventListener('click', startGame);
-
-// =======================
-// СТАРТ
-// =======================
+function openFullscreen() { if(win) document.getElementById("fullscreen").style.display = "flex"; }
 
 setRandomPhoto();
-updatePhoto();
-showMessage("👆 Выбери параметры\nи нажми Старт");
 requestAnimationFrame(loop);
-
 </script>
-
 </body>
 </html>
