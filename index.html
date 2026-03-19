@@ -2,308 +2,266 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Выбор игры + фото 18+</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Hub 18+</title>
 
 <style>
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
+    :root {
+        --primary: #4CAF50;
+        --accent: #ff4646;
+        --bg: #05050a;
+        --card-bg: rgba(255, 255, 255, 0.03);
+    }
 
-body {
-    margin: 0;
-    background: #0a0a1a;
-    font-family: 'Segoe UI', Arial, sans-serif;
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
-}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-.container {
-    max-width: 1000px;
-    padding: 30px;
-    text-align: center;
-}
+    body {
+        margin: 0;
+        background: var(--bg);
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        color: white;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow-x: hidden;
+    }
 
-h1 {
-    font-size: 48px;
-    margin-bottom: 20px;
-    text-shadow: 0 0 20px #4CAF50;
-    color: #fff;
-    letter-spacing: 2px;
-}
+    /* Анимированный фон */
+    .bg-animation {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: radial-gradient(circle at 20% 30%, #1a1a3a 0%, transparent 40%),
+                    radial-gradient(circle at 80% 70%, #2a1a3a 0%, transparent 40%);
+        z-index: -1;
+    }
 
-.warning {
-    background: rgba(255, 70, 70, 0.2);
-    border: 2px solid #ff4646;
-    border-radius: 20px;
-    padding: 20px;
-    margin-bottom: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    font-size: 24px;
-    font-weight: bold;
-    color: #ff9999;
-    backdrop-filter: blur(5px);
-    animation: pulse 2s infinite;
-}
+    .container {
+        max-width: 900px;
+        width: 100%;
+        padding: 40px 20px;
+        text-align: center;
+    }
 
-@keyframes pulse {
-    0% { box-shadow: 0 0 10px #ff4646; }
-    50% { box-shadow: 0 0 30px #ff4646; }
-    100% { box-shadow: 0 0 10px #ff4646; }
-}
+    h1 {
+        font-size: clamp(32px, 8vw, 56px);
+        margin-bottom: 10px;
+        font-weight: 800;
+        background: linear-gradient(to right, #fff, #4CAF50);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -1px;
+    }
 
-.warning span {
-    font-size: 40px;
-}
+    .subtitle {
+        color: #888;
+        margin-bottom: 40px;
+        font-size: 18px;
+    }
 
-.games-grid {
-    display: flex;
-    gap: 40px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-top: 30px;
-}
+    .warning-strip {
+        background: rgba(255, 70, 70, 0.1);
+        border: 1px solid rgba(255, 70, 70, 0.3);
+        padding: 12px;
+        border-radius: 12px;
+        margin-bottom: 40px;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: var(--accent);
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+    }
 
-.game-card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(10px);
-    border: 2px solid #4CAF50;
-    border-radius: 30px;
-    padding: 30px 20px;
-    width: 300px;
-    cursor: pointer;
-    transition: all 0.3s;
-    text-decoration: none;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-}
+    .games-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 30px;
+        margin-bottom: 50px;
+    }
 
-.game-card:hover {
-    transform: scale(1.05);
-    border-color: #ff9800;
-    box-shadow: 0 0 30px #4CAF50;
-}
+    .game-card {
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+        padding: 40px 30px;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        text-decoration: none;
+        color: white;
+    }
 
-.game-icon {
-    font-size: 100px;
-    filter: drop-shadow(0 0 20px #4CAF50);
-}
+    .game-card::before {
+        content: '';
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+        transform: translateX(-100%);
+        transition: 0.6s;
+    }
 
-.game-title {
-    font-size: 36px;
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 3px;
-}
+    .game-card:hover {
+        transform: translateY(-10px);
+        background: rgba(255, 255, 255, 0.07);
+        border-color: var(--primary);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
 
-.game-desc {
-    font-size: 18px;
-    color: #ccc;
-    margin-top: 10px;
-}
+    .game-card:hover::before { transform: translateX(100%); }
 
-.age-warning-small {
-    background: rgba(255, 70, 70, 0.3);
-    border-radius: 30px;
-    padding: 8px 20px;
-    font-size: 14px;
-    font-weight: bold;
-    color: #ff9999;
-    border: 1px solid #ff4646;
-    margin-top: 10px;
-}
+    .game-icon {
+        font-size: 70px;
+        margin-bottom: 20px;
+        display: block;
+        filter: drop-shadow(0 0 15px rgba(255,255,255,0.2));
+    }
 
-.footer-note {
-    margin-top: 60px;
-    font-size: 18px;
-    color: #888;
-    border-top: 1px solid #333;
-    padding-top: 30px;
-}
+    .game-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: #fff;
+    }
 
-/* Модальное окно предупреждения */
-.modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.95);
-    z-index: 1000;
-    justify-content: center;
-    align-items: center;
-}
+    .game-desc {
+        font-size: 15px;
+        color: #aaa;
+        line-height: 1.5;
+    }
 
-.modal-content {
-    background: #1a1a2e;
-    border: 3px solid #ff4646;
-    border-radius: 40px;
-    padding: 40px;
-    max-width: 500px;
-    text-align: center;
-    animation: modalAppear 0.5s;
-}
+    /* Блок доната */
+    .donate-box {
+        background: linear-gradient(rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+        border: 1px dashed rgba(255,255,255,0.15);
+        border-radius: 20px;
+        padding: 25px;
+        margin-top: 20px;
+    }
 
-@keyframes modalAppear {
-    from { transform: scale(0.8); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-}
+    .donate-box p {
+        color: #888;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
 
-.modal-icon {
-    font-size: 80px;
-    margin-bottom: 20px;
-}
+    .card-number {
+        display: inline-block;
+        font-family: 'Courier New', monospace;
+        font-size: 20px;
+        font-weight: bold;
+        color: #ff9800;
+        background: rgba(255, 152, 0, 0.1);
+        padding: 8px 15px;
+        border-radius: 8px;
+        letter-spacing: 1px;
+    }
 
-.modal h2 {
-    font-size: 36px;
-    color: #ff4646;
-    margin-bottom: 20px;
-}
+    /* Модальное окно */
+    .modal {
+        display: none;
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9);
+        z-index: 1000;
+        justify-content: center; align-items: center;
+        backdrop-filter: blur(8px);
+    }
 
-.modal p {
-    font-size: 20px;
-    margin-bottom: 30px;
-    line-height: 1.6;
-    color: #ddd;
-}
+    .modal-content {
+        background: #111;
+        border: 1px solid var(--accent);
+        border-radius: 32px;
+        padding: 40px;
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 0 50px rgba(255, 70, 70, 0.2);
+    }
 
-.modal-buttons {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-}
+    .modal h2 { font-size: 32px; color: var(--accent); margin-bottom: 15px; }
+    .modal p { color: #ccc; margin-bottom: 30px; line-height: 1.6; }
 
-.modal-btn {
-    padding: 15px 40px;
-    font-size: 20px;
-    border: none;
-    border-radius: 50px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s;
-}
+    .modal-btn {
+        padding: 14px 30px;
+        border-radius: 14px;
+        font-weight: bold;
+        cursor: pointer;
+        border: none;
+        transition: 0.2s;
+        width: 100%;
+        font-size: 16px;
+    }
 
-.modal-btn.confirm {
-    background: #4CAF50;
-    color: white;
-}
+    .btn-confirm { background: var(--primary); color: #000; margin-bottom: 10px; }
+    .btn-confirm:hover { background: #66bb6a; transform: scale(1.02); }
 
-.modal-btn.confirm:hover {
-    background: #45a049;
-    transform: scale(1.05);
-}
+    .btn-cancel { background: transparent; color: #666; }
+    .btn-cancel:hover { color: #fff; }
 
-.modal-btn.cancel {
-    background: #666;
-    color: white;
-}
-
-.modal-btn.cancel:hover {
-    background: #888;
-    transform: scale(1.05);
-}
 </style>
 </head>
 <body>
 
+<div class="bg-animation"></div>
+
 <div class="container">
-    <h1>🎮 ВЫБЕРИ ИГРУ</h1>
+    <h1>Game Hub</h1>
+    <p class="subtitle">Аркадные игры с горячим финалом</p>
     
-    <div class="warning">
+    <div class="warning-strip">
         <span>🔞</span>
-        <span>ВНИМАНИЕ: Игры содержат фото 18+</span>
-        <span>🔞</span>
+        <span>КОНТЕНТ ТОЛЬКО ДЛЯ ВЗРОСЛЫХ</span>
     </div>
     
     <div class="games-grid">
-        <!-- Карточка Тетриса -->
         <div class="game-card" onclick="showAgeWarning('tetris')">
-            <div class="game-icon">🧩</div>
-            <div class="game-title">ТЕТРИС</div>
-            <div class="game-desc">Классический тетрис с фото-наградами</div>
-            <div class="age-warning-small">🔞 Содержит 18+ фото</div>
+            <span class="game-icon">🧩</span>
+            <div class="game-title">Тетрис</div>
+            <p class="game-desc">Убирай линии, чтобы открыть скрытое изображение.</p>
         </div>
         
-        <!-- Карточка Змейки -->
         <div class="game-card" onclick="showAgeWarning('snake')">
-            <div class="game-icon">🐍</div>
-            <div class="game-title">ЗМЕЙКА</div>
-            <div class="game-desc">Собери 100 яблок и открой фото</div>
-            <div class="age-warning-small">🔞 Содержит 18+ фото</div>
+            <span class="game-icon">🐍</span>
+            <div class="game-title">Змейка</div>
+            <p class="game-desc">Собери 100 очков. Чем больше змея, тем ближе награда.</p>
         </div>
     </div>
     
-    <div class="footer-note">
-        ⚡ После подтверждения возраста вы перейдете к игре
+    <div class="donate-box">
+        <p>Понравились игры? Поддержи автора донатом ❤️</p>
+        <div class="card-number">4400 4302 1780 2898</div>
     </div>
 </div>
 
-<!-- Модальное окно предупреждения -->
 <div id="ageModal" class="modal">
     <div class="modal-content">
-        <div class="modal-icon">🔞</div>
-        <h2>ПРЕДУПРЕЖДЕНИЕ</h2>
-        <p>Данная игра содержит откровенные фотографии 18+.<br><br>Подтвердите, что вам есть 18 лет и вы согласны с контентом.</p>
-        <div class="modal-buttons">
-            <button class="modal-btn confirm" id="confirmBtn">✅ ПОДТВЕРДИТЬ</button>
-            <button class="modal-btn cancel" onclick="closeModal()">❌ ОТМЕНА</button>
-        </div>
+        <div style="font-size: 50px; margin-bottom: 10px;">🔞</div>
+        <h2>18+</h2>
+        <p>Эта игра содержит откровенный контент. <br> Нажимая «Подтвердить», вы берете на себя ответственность за просмотр данного материала.</p>
+        <button class="modal-btn btn-confirm" id="confirmBtn">✅ ПОДТВЕРДИТЬ</button>
+        <button class="modal-btn btn-cancel" onclick="closeModal()">Отмена</button>
     </div>
 </div>
 
 <script>
-// Переменная для хранения выбранной игры
-let selectedGame = null;
+    let selectedGame = null;
 
-// Открыть модальное окно с предупреждением
-function showAgeWarning(game) {
-    selectedGame = game;
-    document.getElementById('ageModal').style.display = 'flex';
-}
-
-// Закрыть модальное окно
-function closeModal() {
-    document.getElementById('ageModal').style.display = 'none';
-    selectedGame = null;
-}
-
-// Переход к игре после подтверждения
-document.getElementById('confirmBtn').addEventListener('click', function() {
-    if (selectedGame === 'tetris') {
-        window.location.href = 'tetris.html';
-    } else if (selectedGame === 'snake') {
-        window.location.href = 'zmeya.html';
+    function showAgeWarning(game) {
+        selectedGame = game;
+        document.getElementById('ageModal').style.display = 'flex';
     }
-    closeModal();
-});
 
-// Закрытие по клику вне модального окна
-window.addEventListener('click', function(event) {
-    const modal = document.getElementById('ageModal');
-    if (event.target === modal) {
+    function closeModal() {
+        document.getElementById('ageModal').style.display = 'none';
+        selectedGame = null;
+    }
+
+    document.getElementById('confirmBtn').addEventListener('click', function() {
+        if (selectedGame === 'tetris') window.location.href = 'tetris.html';
+        else if (selectedGame === 'snake') window.location.href = 'zmeya.html';
         closeModal();
-    }
-});
+    });
 
-// Блокировка прокрутки при открытом модальном окне
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeModal();
-    }
-});
+    window.onclick = (e) => { if(e.target == document.getElementById('ageModal')) closeModal(); }
 </script>
 
 </body>
