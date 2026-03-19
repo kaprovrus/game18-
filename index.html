@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Выбор игры + фото 18+</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    margin: 0;
+    background: #0a0a1a;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: white;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+}
+
+.container {
+    max-width: 1000px;
+    padding: 30px;
+    text-align: center;
+}
+
+h1 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    text-shadow: 0 0 20px #4CAF50;
+    color: #fff;
+    letter-spacing: 2px;
+}
+
+.warning {
+    background: rgba(255, 70, 70, 0.2);
+    border: 2px solid #ff4646;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff9999;
+    backdrop-filter: blur(5px);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 10px #ff4646; }
+    50% { box-shadow: 0 0 30px #ff4646; }
+    100% { box-shadow: 0 0 10px #ff4646; }
+}
+
+.warning span {
+    font-size: 40px;
+}
+
+.games-grid {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 30px;
+}
+
+.game-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 2px solid #4CAF50;
+    border-radius: 30px;
+    padding: 30px 20px;
+    width: 300px;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-decoration: none;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.game-card:hover {
+    transform: scale(1.05);
+    border-color: #ff9800;
+    box-shadow: 0 0 30px #4CAF50;
+}
+
+.game-icon {
+    font-size: 100px;
+    filter: drop-shadow(0 0 20px #4CAF50);
+}
+
+.game-title {
+    font-size: 36px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.game-desc {
+    font-size: 18px;
+    color: #ccc;
+    margin-top: 10px;
+}
+
+.age-warning-small {
+    background: rgba(255, 70, 70, 0.3);
+    border-radius: 30px;
+    padding: 8px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    color: #ff9999;
+    border: 1px solid #ff4646;
+    margin-top: 10px;
+}
+
+.footer-note {
+    margin-top: 60px;
+    font-size: 18px;
+    color: #888;
+    border-top: 1px solid #333;
+    padding-top: 30px;
+}
+
+/* Модальное окно предупреждения */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.95);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background: #1a1a2e;
+    border: 3px solid #ff4646;
+    border-radius: 40px;
+    padding: 40px;
+    max-width: 500px;
+    text-align: center;
+    animation: modalAppear 0.5s;
+}
+
+@keyframes modalAppear {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+.modal-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.modal h2 {
+    font-size: 36px;
+    color: #ff4646;
+    margin-bottom: 20px;
+}
+
+.modal p {
+    font-size: 20px;
+    margin-bottom: 30px;
+    line-height: 1.6;
+    color: #ddd;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+.modal-btn {
+    padding: 15px 40px;
+    font-size: 20px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.modal-btn.confirm {
+    background: #4CAF50;
+    color: white;
+}
+
+.modal-btn.confirm:hover {
+    background: #45a049;
+    transform: scale(1.05);
+}
+
+.modal-btn.cancel {
+    background: #666;
+    color: white;
+}
+
+.modal-btn.cancel:hover {
+    background: #888;
+    transform: scale(1.05);
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🎮 ВЫБЕРИ ИГРУ</h1>
+    
+    <div class="warning">
+        <span>🔞</span>
+        <span>ВНИМАНИЕ: Игры содержат фото 18+</span>
+        <span>🔞</span>
+    </div>
+    
+    <div class="games-grid">
+        <!-- Карточка Тетриса -->
+        <div class="game-card" onclick="showAgeWarning('tetris')">
+            <div class="game-icon">🧩</div>
+            <div class="game-title">ТЕТРИС</div>
+            <div class="game-desc">Классический тетрис с фото-наградами</div>
+            <div class="age-warning-small">🔞 Содержит 18+ фото</div>
+        </div>
+        
+        <!-- Карточка Змейки -->
+        <div class="game-card" onclick="showAgeWarning('snake')">
+            <div class="game-icon">🐍</div>
+            <div class="game-title">ЗМЕЙКА</div>
+            <div class="game-desc">Собери 100 яблок и открой фото</div>
+            <div class="age-warning-small">🔞 Содержит 18+ фото</div>
+        </div>
+    </div>
+    
+    <div class="footer-note">
+        ⚡ После подтверждения возраста вы перейдете к игре
+    </div>
+</div>
+
+<!-- Модальное окно предупреждения -->
+<div id="ageModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-icon">🔞</div>
+        <h2>ПРЕДУПРЕЖДЕНИЕ</h2>
+        <p>Данная игра содержит откровенные фотографии 18+.<br><br>Подтвердите, что вам есть 18 лет и вы согласны с контентом.</p>
+        <div class="modal-buttons">
+            <button class="modal-btn confirm" id="confirmBtn">✅ ПОДТВЕРДИТЬ</button>
+            <button class="modal-btn cancel" onclick="closeModal()">❌ ОТМЕНА</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// Переменная для хранения выбранной игры
+let selectedGame = null;
+
+// Открыть модальное окно с предупреждением
+function showAgeWarning(game) {
+    selectedGame = game;
+    document.getElementById('ageModal').style.display = 'flex';
+}
+
+// Закрыть модальное окно
+function closeModal() {
+    document.getElementById('ageModal').style.display = 'none';
+    selectedGame = null;
+}
+
+// Переход к игре после подтверждения
+document.getElementById('confirmBtn').addEventListener('click', function() {
+    if (selectedGame === 'tetris') {
+        window.location.href = 'tetris.html';
+    } else if (selectedGame === 'snake') {
+        window.location.href = 'zmeya.html';
+    }
+    closeModal();
+});
+
+// Закрытие по клику вне модального окна
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('ageModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+});
+
+// Блокировка прокрутки при открытом модальном окне
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeModal();
+    }
+});
+</script>
+
+</body>
+</html>
